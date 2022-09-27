@@ -1,20 +1,54 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import * as SplashScreen from 'expo-splash-screen';
+import * as Font from 'expo-font';
+import {NavigationContainer} from '@react-navigation/native';
+import RootDrawerStack from "./routes/drawer";
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+SplashScreen.preventAutoHideAsync();
+
+export default function App()
+{
+    const [appIsReady, setAppIsReady] = useState(false);
+    
+    useEffect(() =>
+    {
+        async function prepare()
+        {
+            try
+            {
+                await Font.loadAsync({
+                    'nunito-regular': require('./assets/fonts/Nunito-Regular.ttf'),
+                    'nunito-bold': require('./assets/fonts/Nunito-Bold.ttf'),
+                    'nunito-italic': require('./assets/fonts/Nunito-Italic.ttf')
+                });
+            } catch(e)
+            {
+                console.warn(e);
+            } finally
+            {
+                setAppIsReady(true);
+            }
+        }
+        
+        prepare();
+    }, []);
+    
+    const onLayoutRootView = useCallback(async() =>
+    {
+        if(appIsReady)
+        {
+            await SplashScreen.hideAsync();
+        }
+    }, [appIsReady]);
+    
+    if(!appIsReady)
+    {
+        return null;
+    }
+    
+    return (
+            <NavigationContainer onReady={onLayoutRootView}>
+                <RootDrawerStack/>
+            </NavigationContainer>
+    );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
